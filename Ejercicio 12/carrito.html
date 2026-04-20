@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    :root {
+        --luxury-gold: #c5a059;
+        --deep-slate: #1e293b;
+        --soft-gray: #f8fafc;
+        --border-light: #e2e8f0;
+    }
+
+    .cart-wrapper {
+        padding: 40px 0;
+        background-color: #ffffff;
+    }
+
+    .cart-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 800;
+        color: var(--deep-slate);
+        border-bottom: 2px solid var(--luxury-gold);
+        display: inline-block;
+        padding-bottom: 10px;
+        margin-bottom: 40px;
+    }
+
+    /* Listado de Productos */
+    .order-item {
+        background: #fff;
+        border-bottom: 1px solid var(--border-light);
+        padding: 25px 15px;
+        transition: background 0.3s ease;
+    }
+
+    .order-item:hover {
+        background: var(--soft-gray);
+    }
+
+    .item-category {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--luxury-gold);
+        font-weight: 700;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .item-name {
+        color: var(--deep-slate);
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .item-price {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.1rem;
+        color: var(--deep-slate);
+        font-weight: 700;
+    }
+
+    /* Panel de Resumen Premium */
+    .summary-card {
+        background: var(--deep-slate);
+        color: white;
+        border-radius: 12px;
+        padding: 35px;
+        position: sticky;
+        top: 20px;
+        box-shadow: 0 20px 40px rgba(30, 41, 59, 0.15);
+    }
+
+    .summary-title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--luxury-gold);
+        margin-bottom: 25px;
+        display: block;
+        font-weight: 700;
+    }
+
+    .summary-line {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .total-line {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 25px;
+        padding-top: 25px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .total-amount {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--luxury-gold);
+    }
+
+    /* Botonera */
+    .btn-checkout {
+        background: var(--luxury-gold);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 18px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .btn-checkout:hover {
+        background: #b38f4d;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-continue {
+        color: var(--deep-slate);
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn-continue:hover {
+        color: var(--luxury-gold);
+    }
+</style>
+
+<div class="cart-wrapper">
+    <div class="row">
+        <div class="col-md-8">
+            <h3 class="cart-title">Bolsa de Compra</h3>
+            <p class="text-muted mb-4 small">{{ items|length }} artículos listos para procesar</p>
+
+            <div class="order-list">
+                {% for item in items %}
+                <div class="order-item d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <span class="item-category">{{ item.cat }}</span>
+                        <h6 class="item-name mb-0">{{ item.nombre }}</h6>
+                        <small class="text-muted">Precio unitario: ${{ item.precio }}</small>
+                    </div>
+                    <div class="item-price">
+                        ${{ item.precio }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <a href="{{ url_for('catalogo') }}" class="btn-continue">
+                <i class="fas fa-plus-circle"></i> Continuar Explorando
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <div class="summary-card">
+                <span class="summary-title">Resumen de Orden</span>
+                
+                <div class="summary-line">
+                    <span>Subtotal</span>
+                    <span>${{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                
+                <div class="summary-line">
+                    <span>Impuestos (IVA 16%)</span>
+                    <span>${{ "%.2f"|format(iva) }}</span>
+                </div>
+
+                <div class="total-line">
+                    <span class="fw-bold">Total Final</span>
+                    <span class="total-amount">${{ "%.2f"|format(total) }}</span>
+                </div>
+
+                <a href="{{ url_for('exito') }}" class="btn-checkout">
+                    Procesar Pago
+                </a>
+
+                <div class="text-center mt-4" style="opacity: 0.5; font-size: 0.65rem; letter-spacing: 1px;">
+                    <i class="fas fa-lock"></i> TRANSACCIÓN ENCRIPTADA
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

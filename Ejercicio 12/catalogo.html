@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    :root {
+        --luxury-gold: #c5a059;
+        --deep-slate: #1e293b;
+        --soft-gray: #f8fafc;
+        --border-light: #e2e8f0;
+    }
+
+    .main-container {
+        padding: 40px 20px;
+        background-color: #ffffff;
+    }
+
+    /* Encabezado Estilo Editorial */
+    .catalog-header {
+        margin-bottom: 60px;
+        border-bottom: 1px solid var(--border-light);
+        padding-bottom: 20px;
+    }
+
+    .catalog-header h3 {
+        font-family: 'Playfair Display', serif; /* Opcional: una fuente serif le daría más lujo */
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: var(--deep-slate);
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+
+    .item-count {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--luxury-gold);
+        font-weight: 700;
+    }
+
+    /* Tarjetas tipo Galería */
+    .product-card {
+        background: #fff;
+        border: none;
+        border-radius: 0px; /* Estilo editorial cuadrado */
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Contenedor de Imagen Minimalista */
+    .img-display {
+        height: 280px;
+        background: var(--soft-gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .img-display i {
+        color: #cbd5e1;
+        transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    .product-card:hover .img-display i {
+        color: var(--luxury-gold);
+        transform: scale(1.1);
+    }
+
+    /* Badge de Categoría Sutil */
+    .category-label {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        background: white;
+        color: var(--deep-slate);
+        padding: 6px 15px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .card-content {
+        padding: 20px 0; /* Sin padding lateral para alinear con la imagen */
+    }
+
+    .product-title {
+        color: var(--deep-slate);
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+        text-transform: capitalize;
+    }
+
+    .product-price {
+        font-size: 1.2rem;
+        font-weight: 400;
+        color: var(--luxury-gold);
+        display: block;
+        margin-bottom: 15px;
+        font-family: 'Courier New', Courier, monospace; /* Toque de etiqueta de precio clásica */
+    }
+
+    /* Botón de Acción Elegante */
+    .btn-luxury-add {
+        background: var(--deep-slate);
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 12px;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn-luxury-add:hover {
+        background: var(--luxury-gold);
+        color: white;
+        letter-spacing: 2px;
+    }
+
+    /* Grid layout adjustment */
+    .row {
+        --bs-gutter-x: 2rem;
+        --bs-gutter-y: 3rem;
+    }
+</style>
+
+<div class="main-container">
+    <div class="catalog-header">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end">
+            <div>
+                <span class="item-count">Colección Actual</span>
+                <h3>Catálogo de Productos</h3>
+            </div>
+            <p class="text-muted m-0" style="font-size: 0.9rem;">
+                Mostrando {{ productos|length }} piezas exclusivas
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for id, p in productos.items() %}
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="product-card">
+                <div class="img-display">
+                    <span class="category-label">{{ p.cat }}</span>
+                    <i class="fas fa-box fa-3x"></i>
+                </div>
+                
+                <div class="card-content">
+                    <h6 class="product-title" title="{{ p.nombre }}">{{ p.nombre }}</h6>
+                    <span class="product-price">${{ "%.2f"|format(p.precio) }}</span>
+                    
+                    <a href="{{ url_for('agregar', codigo=id) }}" class="btn-luxury-add">
+                        <i class="fas fa-shopping-bag"></i> Añadir a Orden
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

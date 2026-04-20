@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Pago - Luxury Retail</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --luxury-gold: #c5a059;
+            --soft-white: #f8f9fa;
+            --deep-slate: #1e293b;
+            --success-bg: #ecfdf5;
+            --success-icon: #10b981;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        .confirmation-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .glass-invoice {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            overflow: hidden;
+            width: 100%;
+            max-width: 480px;
+            border-top: 8px solid var(--luxury-gold);
+        }
+
+        .header-status {
+            padding: 45px 30px 30px;
+            text-align: center;
+        }
+
+        .icon-seal {
+            width: 65px;
+            height: 65px;
+            background: var(--success-bg);
+            color: var(--success-icon);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        .invoice-details {
+            padding: 0 40px 30px;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 5px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #f8fafc;
+            color: var(--deep-slate);
+            font-size: 0.95rem;
+        }
+
+        .total-banner {
+            background: var(--deep-slate);
+            color: white;
+            padding: 22px;
+            border-radius: 12px;
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 10px 40px 40px;
+        }
+
+        .btn-action {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .btn-primary {
+            background: var(--luxury-gold);
+            color: white;
+            border: none;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .footer-info {
+            text-align: center;
+            margin-top: 25px;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            line-height: 1.6;
+        }
+
+        @media print {
+            body { background: white; }
+            .actions-grid, .header-status p { display: none; }
+            .glass-invoice { box-shadow: none; border: 1px solid #eee; margin: 0; }
+            .confirmation-page { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="confirmation-page">
+    <div class="glass-invoice">
+        <div class="header-status">
+            <div class="icon-seal">
+                <i class="fas fa-check"></i>
+            </div>
+            <h1 style="color: var(--deep-slate); font-size: 1.4rem; margin: 0 0 8px 0; font-weight: 800;">Pago Confirmado</h1>
+            <p style="color: #64748b; font-size: 0.85rem; margin: 0;">Tu transacción ha sido procesada con éxito.</p>
+        </div>
+
+        <div class="invoice-details">
+            <span class="section-label">Detalles de la Compra</span>
+
+            {% for item in items %}
+            <div class="summary-row">
+                <span style="font-weight: 500;">{{ item.nombre }}</span>
+                <span style="font-family: monospace;">${{ "%.2f"|format(item.precio) }}</span>
+            </div>
+            {% endfor %}
+
+            <div style="margin-top: 15px;">
+                <div class="summary-row" style="border: none; padding: 4px 0; font-size: 0.8rem; color: #64748b;">
+                    <span>Subtotal</span>
+                    <span>${{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                <div class="summary-row" style="border: none; padding: 4px 0; font-size: 0.8rem; color: #64748b;">
+                    <span>IVA (16%)</span>
+                    <span>${{ "%.2f"|format(iva) }}</span>
+                </div>
+            </div>
+
+            <div class="total-banner">
+                <span style="font-size: 0.75rem; opacity: 0.9; font-weight: 600; letter-spacing: 0.5px;">TOTAL PAGADO</span>
+                <span style="font-size: 1.5rem; font-weight: 800; font-family: monospace;">${{ "%.2f"|format(total) }}</span>
+            </div>
+
+            <div class="footer-info">
+                ID DE TRANSACCIÓN: <span id="ref-id" style="color: #64748b; font-weight: 600;"></span><br>
+                REGISTRO: <span id="current-timestamp"></span>
+            </div>
+        </div>
+
+        <div class="actions-grid">
+            <a href="/escaneo" class="btn-action btn-secondary">
+                <i class="fas fa-plus"></i> Nueva Compra
+            </a>
+            <button onclick="window.print()" class="btn-action btn-primary">
+                <i class="fas fa-download"></i> Recibo PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Generar datos dinámicos para el recibo
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+    
+    document.getElementById('current-timestamp').innerText = `${dateStr} | ${timeStr}`;
+    
+    // Generar un ID de transacción alfanumérico único
+    const randomID = Math.random().toString(36).substring(2, 10).toUpperCase();
+    document.getElementById('ref-id').innerText = `TXN-${randomID}`;
+</script>
+
+</body>
+</html>
