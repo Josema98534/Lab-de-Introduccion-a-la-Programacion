@@ -1,0 +1,118 @@
+/* static/css/style.css */
+:root {
+    --primary: #00d2ff;
+    --secondary: #3a7bd5;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f8fafc;
+    --accent: #22c55e;
+}
+
+body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 15px; /* Menos padding en móviles */
+}
+
+h1 {
+    font-size: 1.8rem; /* Más pequeño para que no se corte en el cel */
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(to right, #00d2ff, #3a7bd5);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 20px 0;
+}
+
+/* Contenedor de la lista */
+.lista-productos {
+    background: var(--card);
+    width: 90%; /* Ajuste a la pantalla */
+    max-width: 800px;
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+li {
+    background: rgba(255, 255, 255, 0.05);
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.85rem; /* Fuente más fina para móviles */
+}
+
+/* Lector QR Ajustado */
+#reader {
+    width: 100% !important; /* Que use todo el ancho del cel */
+    max-width: 400px;
+    border: 2px solid var(--primary) !important;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 20px;
+}
+
+/* Formulario Responsivo */
+form {
+    display: flex;
+    flex-direction: column; /* Uno debajo de otro por defecto */
+    gap: 12px;
+    width: 90%;
+    max-width: 800px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+input {
+    background: #0f172a;
+    border: 1px solid #334155;
+    padding: 14px; /* Más espacio para tocar con el dedo */
+    border-radius: 10px;
+    color: white;
+    font-size: 16px; /* 16px evita que iOS haga zoom automático al clickear */
+}
+
+button[type="submit"] {
+    background: linear-gradient(to right, #22c55e, #16a34a);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin-top: 10px;
+}
+
+/* --- ESTO ES LO QUE ARREGLA LA PC SIN ARRUINAR EL CEL --- */
+@media (min-width: 600px) {
+    h1 { font-size: 2.5rem; }
+    form {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* En PC se ponen en dos columnas */
+    }
+    button[type="submit"] {
+        grid-column: span 2;
+    }
+}
