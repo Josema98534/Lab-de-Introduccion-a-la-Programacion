@@ -14,6 +14,7 @@ def ejercicio_2():
     for ano in range(1, edad + 1):
         print("Has cumplido", ano, "años")
 
+
 def ejercicio_3():
     print("Este es el ejercicio 3")
     numero = int(input("Introduce un número entero positivo: "))
@@ -22,13 +23,13 @@ def ejercicio_3():
         if i % 2 != 0:
             print(i, end=", ")
 
+
 def ejercicio_4():
     print("Este es el ejercicio 4")
     numero = int(input("Introduce un número entero positivo: "))
 
     for i in range(numero, -1, -1):
         print(i, end=", ")
-
 
 
 def ejercicio_5():
@@ -41,7 +42,6 @@ def ejercicio_5():
     for año in range(1, años + 1):
         capital += capital * interes / 100
         print(f"Año {año}: {capital:.2f}")
-
 
 
 def ejercicio_6():
@@ -66,7 +66,7 @@ def ejercicio_7():
 
 def ejercicio_8():
     print("Este es el ejercicio 8")
-    altura = int(input("Introduce la altura del triángulo: "))
+    altura = int(input("Introduce la altura del triángulo: ")
 
     for fila in range(1, altura + 1):
         impar = 2 * fila - 1
@@ -98,10 +98,8 @@ def ejercicio_10():
             if numero % i == 0:
                 es_primo = False
                 break
-        if es_primo:
-            print("Es primo")
-        else:
-            print("No es primo")
+        print("Es primo" if es_primo else "No es primo")
+
 
 def ejercicio_11():
     print("Este es el ejercicio 11")
@@ -133,25 +131,7 @@ def ejercicio_13():
         print(texto)
 
 
-
-ejercicios = {
-    1: ejercicio_1,
-    2: ejercicio_2,
-    3: ejercicio_3,
-    4: ejercicio_4,
-    5: ejercicio_5,
-    6: ejercicio_6,
-    7: ejercicio_7,
-    8: ejercicio_8,
-    9: ejercicio_9,
-    10: ejercicio_10,
-    11: ejercicio_11,
-    12: ejercicio_12,
-    13: ejercicio_13
-}
-
-
-
+# MENU con match-case
 while True:
     print("\n--- MENU DE EJERCICIOS ---")
     print("1 al 13 para ejecutar ejercicios")
@@ -159,12 +139,35 @@ while True:
 
     opcion = int(input("Elige un ejercicio: "))
 
-    if opcion == 0:
-        print("Programa terminado")
-        break
-
-    elif opcion in ejercicios:
-        ejercicios[opcion]()
-
-    else:
-        print("Opción no válida")
+    match opcion:
+        case 0:
+            print("Programa terminado")
+            break
+        case 1:
+            ejercicio_1()
+        case 2:
+            ejercicio_2()
+        case 3:
+            ejercicio_3()
+        case 4:
+            ejercicio_4()
+        case 5:
+            ejercicio_5()
+        case 6:
+            ejercicio_6()
+        case 7:
+            ejercicio_7()
+        case 8:
+            ejercicio_8()
+        case 9:
+            ejercicio_9()
+        case 10:
+            ejercicio_10()
+        case 11:
+            ejercicio_11()
+        case 12:
+            ejercicio_12()
+        case 13:
+            ejercicio_13()
+        case _:
+            print("Opción no válida")
