@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Base de Datos — StudyBase</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --panel: #13131c;
+    --panel2: #1a1a28;
+    --border: #2a2a3d;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --error: #f43f5e;
+    --success: #10b981;
+    --warn: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px;
+  }
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 36px;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo-icon {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; font-size: 20px;
+  }
+  .logo-text { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+  .logo-sub { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  .header-actions { display: flex; gap: 10px; }
+  .btn {
+    padding: 10px 20px; border-radius: 10px;
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer; border: none; transition: transform .15s, box-shadow .15s;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #6d28d9); color: #fff; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,.4); }
+  .btn-outline {
+    background: transparent; color: var(--accent2);
+    border: 1px solid rgba(6,182,212,.3);
+  }
+  .btn-outline:hover { background: rgba(6,182,212,.08); }
+  .btn-danger { background: rgba(244,63,94,.1); color: var(--error); border: 1px solid rgba(244,63,94,.3); }
+  .btn-danger:hover { background: rgba(244,63,94,.2); }
+
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+    gap: 16px; margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px;
+    animation: fadeIn .4s ease both;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .stat-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; font-family: 'DM Mono', monospace; }
+  .stat-value { font-size: 32px; font-weight: 800; letter-spacing: -2px; }
+  .stat-value.purple { color: var(--accent); }
+  .stat-value.cyan { color: var(--accent2); }
+  .stat-value.green { color: var(--success); }
+  .stat-value.warn { color: var(--warn); }
+
+  .section {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 16px; margin-bottom: 24px; overflow: hidden;
+    animation: fadeIn .5s ease both;
+  }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px; border-bottom: 1px solid var(--border);
+    background: var(--panel2);
+  }
+  .section-title { font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .badge {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    padding: 3px 10px; border-radius: 20px;
+    background: rgba(124,58,237,.15); color: var(--accent);
+    border: 1px solid rgba(124,58,237,.25);
+  }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-family: 'DM Mono', monospace; font-size: 13px; }
+  th {
+    padding: 12px 16px; text-align: left;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,.02);
+  }
+  td {
+    padding: 13px 16px; border-bottom: 1px solid rgba(42,42,61,.5);
+    color: var(--text);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(124,58,237,.05); }
+
+  .chip {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace;
+  }
+  .chip-admin { background: rgba(124,58,237,.2); color: #a78bfa; border: 1px solid rgba(124,58,237,.3); }
+  .chip-student { background: rgba(6,182,212,.15); color: #67e8f9; border: 1px solid rgba(6,182,212,.25); }
+  .chip-login { background: rgba(16,185,129,.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,.25); }
+  .chip-register { background: rgba(245,158,11,.15); color: #fcd34d; border: 1px solid rgba(245,158,11,.3); }
+
+  .empty {
+    text-align: center; padding: 40px;
+    color: var(--muted); font-family: 'DM Mono', monospace; font-size: 13px;
+  }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--muted); font-size: 13px; font-family: 'DM Mono', monospace;
+    text-decoration: none; margin-bottom: 28px;
+    transition: color .2s;
+  }
+  .back-link:hover { color: var(--accent2); }
+
+  .sql-box {
+    padding: 20px 24px;
+    display: flex; gap: 12px; align-items: flex-start;
+    border-top: 1px solid var(--border);
+  }
+  .sql-box textarea {
+    flex: 1; background: rgba(255,255,255,.04);
+    border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px;
+    padding: 12px 14px; resize: vertical; min-height: 70px; outline: none;
+  }
+  .sql-box textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(124,58,237,.2); }
+  #sql-result {
+    padding: 0 24px 20px; font-family: 'DM Mono', monospace;
+    font-size: 12px; color: var(--success); display: none;
+  }
+  #sql-result.err { color: var(--error); }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="login.html">← Volver al Login</a>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-icon">🗄️</div>
+    <div>
+      <div class="logo-text">StudyBase</div>
+      <div class="logo-sub">// panel de base de datos</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" onclick="loadAll()">⟳ Actualizar</button>
+    <button class="btn btn-danger" onclick="clearDB()">✕ Limpiar BD</button>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid" id="stats-grid"></div>
+
+<!-- Usuarios -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-title">Usuarios Registrados</span>
+    <span class="badge" id="users-count">0 registros</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>ID</th><th>Usuario</th><th>Email</th>
+        <th>Contraseña</th><th>Rol</th><th>Creado</th>
+      </tr></thead>
+      <tbody id="users-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Actividad -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-title">Registro de Actividad</span>
+    <span class="badge" id="activity-count">0 eventos</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>ID</th><th>Usuario</th><th>Acción</th><th>Timestamp</th>
+      </tr></thead>
+      <tbody id="activity-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Consola SQL -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-title">Consola SQL</span>
+    <span class="badge">queries directos</span>
+  </div>
+  <div class="sql-box">
+    <textarea id="sql-input" placeholder="SELECT * FROM users; &#10;SELECT * FROM activity ORDER BY id DESC;"></textarea>
+    <button class="btn btn-primary" onclick="runSQL()">Ejecutar</button>
+  </div>
+  <div id="sql-result"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+<script>
+let SQL, db;
+
+async function initDB() {
+  SQL = await initSqlJs({
+    locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`
+  });
+  const saved = localStorage.getItem('studybase_db');
+  if (saved) {
+    const arr = Uint8Array.from(atob(saved), c => c.charCodeAt(0));
+    db = new SQL.Database(arr);
+    loadAll();
+  } else {
+    document.getElementById('stats-grid').innerHTML =
+      '<div class="stat-card"><div class="stat-label">Estado</div><div style="color:var(--warn);font-family:\'DM Mono\',monospace;font-size:13px;margin-top:8px">No hay datos. Primero inicia sesión en <a href="login.html" style="color:var(--accent2)">login.html</a></div></div>';
+  }
+}
+
+function loadAll() {
+  loadStats();
+  loadUsers();
+  loadActivity();
+}
+
+function loadStats() {
+  const users    = db.exec('SELECT COUNT(*) FROM users')[0]?.values[0][0] || 0;
+  const logins   = db.exec("SELECT COUNT(*) FROM activity WHERE action='login'")[0]?.values[0][0] || 0;
+  const regs     = db.exec("SELECT COUNT(*) FROM activity WHERE action='register'")[0]?.values[0][0] || 0;
+  const admins   = db.exec("SELECT COUNT(*) FROM users WHERE role='admin'")[0]?.values[0][0] || 0;
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total usuarios</div><div class="stat-value purple">${users}</div></div>
+    <div class="stat-card"><div class="stat-label">Inicios de sesión</div><div class="stat-value cyan">${logins}</div></div>
+    <div class="stat-card"><div class="stat-label">Registros nuevos</div><div class="stat-value green">${regs}</div></div>
+    <div class="stat-card"><div class="stat-label">Admins</div><div class="stat-value warn">${admins}</div></div>
+  `;
+}
+
+function loadUsers() {
+  const res = db.exec('SELECT id, username, email, password, role, created_at FROM users ORDER BY id');
+  const tbody = document.getElementById('users-tbody');
+  if (!res.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin usuarios</td></tr>'; return; }
+  document.getElementById('users-count').textContent = res[0].values.length + ' registros';
+  tbody.innerHTML = res[0].values.map(([id,u,e,p,r,c]) => `
+    <tr>
+      <td>${id}</td>
+      <td><strong>${u}</strong></td>
+      <td>${e || '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${p}</td>
+      <td><span class="chip chip-${r}">${r}</span></td>
+      <td>${c}</td>
+    </tr>
+  `).join('');
+}
+
+function loadActivity() {
+  const res = db.exec(`
+    SELECT a.id, u.username, a.action, a.timestamp
+    FROM activity a
+    LEFT JOIN users u ON a.user_id = u.id
+    ORDER BY a.id DESC LIMIT 50
+  `);
+  const tbody = document.getElementById('activity-tbody');
+  if (!res.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">Sin actividad registrada</td></tr>'; return; }
+  document.getElementById('activity-count').textContent = res[0].values.length + ' eventos';
+  tbody.innerHTML = res[0].values.map(([id,u,ac,ts]) => `
+    <tr>
+      <td>${id}</td>
+      <td><strong>${u || '?'}</strong></td>
+      <td><span class="chip chip-${ac}">${ac}</span></td>
+      <td>${ts}</td>
+    </tr>
+  `).join('');
+}
+
+function runSQL() {
+  const q = document.getElementById('sql-input').value.trim();
+  const out = document.getElementById('sql-result');
+  if (!q) return;
+  out.style.display = 'block';
+  try {
+    const res = db.exec(q);
+    if (!res.length) { out.className=''; out.textContent = '✓ Ejecutado correctamente (sin filas devueltas).'; return; }
+    const cols = res[0].columns;
+    const rows = res[0].values;
+    out.className = '';
+    out.textContent = [cols.join(' | '), '─'.repeat(60), ...rows.map(r=>r.join(' | '))].join('\n');
+  } catch(e) {
+    out.className = 'err';
+    out.textContent = '✗ ' + e.message;
+  }
+}
+
+function clearDB() {
+  if (!confirm('¿Seguro? Esto borrará todos los datos (excepto los usuarios base se recrearán al abrir login.html de nuevo).')) return;
+  localStorage.removeItem('studybase_db');
+  location.reload();
+}
+
+initDB();
+</script>
+</body>
+</html>
