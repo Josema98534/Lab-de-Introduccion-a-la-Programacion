@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!--
+  ============================================================
+  FINTRACK - Aplicación de Finanzas Personales
+  ============================================================
+  Autores  : Reingeniería con paradigma Estructurado/Funcional
+  Versión  : 2.0 (Reingeniería Educativa)
+  Lenguaje : HTML5 + CSS3 + JavaScript (ES6 sin POO)
+  IDE      : VS Code
+  IA       : Claude (Anthropic) — apoyo en optimización y documentación
+  ------------------------------------------------------------
+  RESTRICCIONES APLICADAS:
+    - Sin clases (POO prohibida)
+    - Sin diccionarios complejos anidados
+    - Solo: variables, arrays, funciones, if/else, for/while
+    - Código comentado bloque por bloque
+  ============================================================
+  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack – Finanzas Personales</title>
+
+  <!-- Fuentes Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js: librería externa solo para gráfica visual (no oculta lógica de datos) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <style>
+    /* ============================================================
+       VARIABLES DE DISEÑO – Paleta de colores y medidas base
+    ============================================================ */
+    :root {
+      --navy:        #1C2463;
+      --navy-light:  #2D3A8C;
+      --green:       #2E7D32;
+      --green-light: #4CAF50;
+      --green-bg:    #E8F5E9;
+      --red:         #C62828;
+      --red-light:   #EF5350;
+      --red-bg:      #FFEBEE;
+      --gray-50:     #F8F9FB;
+      --gray-100:    #F0F2F5;
+      --gray-200:    #E2E6ED;
+      --gray-300:    #C8D0DC;
+      --gray-400:    #9AA3B0;
+      --gray-600:    #5A6272;
+      --white:       #FFFFFF;
+      --text-main:   #1A1F35;
+      --text-muted:  #6B7280;
+      --text-light:  #9CA3AF;
+      --radius-sm:   6px;
+      --radius-md:   10px;
+      --radius-lg:   16px;
+      --radius-xl:   24px;
+      --shadow-sm:   0 1px 3px rgba(0,0,0,.06);
+      --shadow-md:   0 4px 16px rgba(0,0,0,.08);
+      --font:        'DM Sans', sans-serif;
+      --font-display:'DM Serif Display', serif;
+    }
+
+    /* ============================================================
+       RESET BASE – Normaliza márgenes y caja de cada elemento
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+    body { font-family: var(--font); background: var(--gray-50); color: var(--text-main); min-height: 100vh; }
+    button { cursor: pointer; font-family: var(--font); }
+    input, select { font-family: var(--font); }
+
+    /* ============================================================
+       NAVBAR – Barra de navegación fija en la parte superior
+    ============================================================ */
+    .navbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .logo {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 600; font-size: 18px; color: var(--navy); text-decoration: none;
+    }
+    .logo-icon {
+      width: 32px; height: 32px; background: var(--navy);
+      border-radius: var(--radius-sm); display: flex;
+      align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link {
+      padding: 6px 14px; border-radius: var(--radius-sm); font-size: 14px;
+      font-weight: 500; color: var(--text-muted); background: none; border: none;
+      cursor: pointer; transition: background .15s, color .15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .nav-link.active, .nav-link:hover { background: var(--gray-100); color: var(--text-main); }
+    .nav-search {
+      margin-left: auto; display: flex; align-items: center; gap: 8px;
+      background: var(--gray-100); border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md); padding: 0 12px; height: 36px; min-width: 220px;
+    }
+    .nav-search svg { width: 16px; height: 16px; stroke: var(--gray-400); fill: none; flex-shrink: 0; }
+    .nav-search input {
+      background: none; border: none; outline: none;
+      font-size: 13px; color: var(--text-main); width: 100%;
+    }
+    .nav-search input::placeholder { color: var(--gray-400); }
+    .btn-add {
+      background: var(--green); color: #fff; border: none;
+      border-radius: var(--radius-md); padding: 0 16px; height: 36px;
+      font-size: 13px; font-weight: 600; display: flex; align-items: center;
+      gap: 6px; transition: background .15s; white-space: nowrap;
+    }
+    .btn-add:hover { background: var(--green-light); }
+    .nav-avatar {
+      width: 34px; height: 34px; border-radius: 50%; background: var(--navy);
+      border: 2px solid var(--gray-300); display: flex; align-items: center;
+      justify-content: center; font-size: 13px; font-weight: 700; color: #fff;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .nav-user-info { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .nav-username  { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+    .btn-logout {
+      padding: 5px 12px; border-radius: var(--radius-md);
+      border: 1px solid var(--gray-300); background: var(--white);
+      font-size: 12px; color: var(--text-muted); cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ============================================================
+       CONTENIDO PRINCIPAL – Centra y limita el ancho máximo
+    ============================================================ */
+    .main-content { max-width: 1200px; margin: 0 auto; padding: 28px 24px 48px; }
+
+    /* ============================================================
+       VISTAS – Dashboard (visible) y Analytics (oculto por defecto)
+    ============================================================ */
+    #view-dashboard { display: block; }
+    #view-analytics  { display: none; }
+
+    /* ============================================================
+       TARJETAS SUPERIORES – Grid de 4 columnas con métricas clave
+    ============================================================ */
+    .top-cards {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr 1fr;
+      gap: 16px; margin-bottom: 24px;
+    }
+    /* Tarjeta grande de saldo total */
+    .card-total {
+      background: var(--navy); border-radius: var(--radius-xl);
+      padding: 28px; color: #fff; position: relative; overflow: hidden;
+    }
+    .card-total::before {
+      content: ''; position: absolute; right: -20px; top: 20px;
+      width: 120px; height: 60px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 60'%3E%3Cpolyline points='0,30 20,15 40,35 60,10 80,40 100,20 120,30' fill='none' stroke='rgba(255,255,255,0.18)' stroke-width='2.5'/%3E%3C/svg%3E");
+      background-size: contain; background-repeat: no-repeat;
+    }
+    .card-total-label { font-size: 13px; opacity: .7; margin-bottom: 8px; letter-spacing: .02em; }
+    .card-total-amount {
+      font-family: var(--font-display); font-size: 42px;
+      letter-spacing: -.02em; margin-bottom: 6px;
+      cursor: pointer; display: flex; align-items: center; gap: 10px;
+    }
+    .edit-saldo-btn {
+      background: rgba(255,255,255,.15); border: none;
+      border-radius: var(--radius-sm); color: #fff;
+      width: 28px; height: 28px; display: flex;
+      align-items: center; justify-content: center;
+      cursor: pointer; transition: background .15s; flex-shrink: 0;
+    }
+    .edit-saldo-btn:hover { background: rgba(255,255,255,.25); }
+    .card-total-sub { font-size: 12px; opacity: .55; margin-bottom: 20px; }
+    .card-total-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 500;
+    }
+    .badge-navy { background: rgba(255,255,255,.12); color: rgba(255,255,255,.9); }
+    .badge-green { background: var(--green-bg); color: var(--green); }
+    .badge-red   { background: var(--red-bg);   color: var(--red); }
+    /* Tarjetas métricas pequeñas */
+    .card-metric {
+      background: var(--white); border-radius: var(--radius-lg);
+      padding: 20px; border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);
+    }
+    .card-metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+    .card-metric-value { font-size: 26px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; }
+    .card-metric-sub   { font-size: 12px; color: var(--text-muted); }
+
+    /* ============================================================
+       FILA DE FILTROS – Botones de filtro y exportar CSV
+    ============================================================ */
+    .filters-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .filter-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md); background: var(--white);
+      font-size: 13px; color: var(--text-main); cursor: pointer; transition: border-color .15s;
+    }
+    .filter-btn:hover { border-color: var(--navy); }
+    .btn-export {
+      margin-left: auto; display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md); background: var(--white);
+      font-size: 13px; color: var(--text-main); cursor: pointer; transition: border-color .15s;
+    }
+    .btn-export:hover { border-color: var(--navy); }
+
+    /* ============================================================
+       GRID INFERIOR – Panel izquierdo: transacciones | Sidebar derecha
+    ============================================================ */
+    .bottom-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+    .card-transactions {
+      background: var(--white); border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm); overflow: hidden;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px 16px; border-bottom: 1px solid var(--gray-100);
+    }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); }
+    .link-ver-todo {
+      font-size: 13px; color: var(--navy); font-weight: 500;
+      background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+    }
+    /* Cabecera de columnas de tabla */
+    .tx-head {
+      display: grid; grid-template-columns: 130px 1fr 140px 120px 44px;
+      padding: 10px 24px; font-size: 12px; font-weight: 600;
+      color: var(--text-muted); letter-spacing: .05em;
+      text-transform: uppercase; border-bottom: 1px solid var(--gray-100);
+    }
+    /* Filas de transacciones individuales */
+    .tx-list { min-height: 80px; }
+    .tx-item {
+      display: grid; grid-template-columns: 130px 1fr 140px 120px 44px;
+      align-items: center; padding: 13px 24px;
+      border-bottom: 1px solid var(--gray-50); transition: background .12s;
+    }
+    .tx-item:last-child { border-bottom: none; }
+    .tx-item:hover { background: var(--gray-50); }
+    .tx-date { font-size: 13px; color: var(--text-muted); }
+    .tx-desc { font-size: 14px; font-weight: 500; }
+    .tx-cat {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--text-muted);
+    }
+    .tx-cat-icon {
+      width: 24px; height: 24px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; font-size: 13px;
+    }
+    .tx-amount { font-size: 14px; font-weight: 600; text-align: right; }
+    .tx-amount.income  { color: var(--green); }
+    .tx-amount.expense { color: var(--red-light); }
+    .tx-delete {
+      background: none; border: none; color: var(--gray-300); font-size: 18px;
+      cursor: pointer; border-radius: var(--radius-sm);
+      width: 32px; height: 32px; display: flex; align-items: center;
+      justify-content: center; transition: background .15s, color .15s; margin-left: auto;
+    }
+    .tx-delete:hover { background: var(--red-bg); color: var(--red-light); }
+    /* Estado vacío cuando no hay transacciones */
+    .tx-empty { text-align: center; padding: 48px 24px; color: var(--text-muted); font-size: 14px; }
+    .tx-empty-icon { font-size: 40px; margin-bottom: 12px; }
+    /* Resumen numérico al pie de la tabla */
+    .tx-summary {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--gray-200); border-top: 1px solid var(--gray-200);
+    }
+    .tx-summary-item { background: var(--white); padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+    .tx-summary-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--gray-100); }
+    .tx-summary-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+    .tx-summary-value { font-size: 13px; font-weight: 600; }
+
+    /* ============================================================
+       SIDEBAR – Metas de ahorro e insight del mes
+    ============================================================ */
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .card-goals {
+      background: var(--white); border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm); padding: 20px;
+    }
+    .goal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .goal-title { font-size: 15px; font-weight: 600; }
+    .btn-add-goal {
+      background: none; border: none; font-size: 20px; color: var(--navy);
+      cursor: pointer; width: 28px; height: 28px; display: flex;
+      align-items: center; justify-content: center;
+      border-radius: var(--radius-sm); transition: background .12s;
+    }
+    .btn-add-goal:hover { background: var(--gray-100); }
+    .goal-item { margin-bottom: 18px; }
+    .goal-item:last-child { margin-bottom: 0; }
+    .goal-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .goal-name { font-size: 14px; font-weight: 500; }
+    .goal-pct  { font-size: 14px; font-weight: 700; color: var(--navy); }
+    /* Barra de progreso de la meta */
+    .goal-bar { height: 6px; background: var(--gray-100); border-radius: 99px; overflow: hidden; margin-bottom: 4px; }
+    .goal-bar-fill { height: 100%; border-radius: 99px; background: var(--navy); transition: width .4s ease; }
+    .goal-remaining { font-size: 11px; color: var(--text-light); }
+    /* Tarjeta azul de insight */
+    .card-insight { background: var(--navy); border-radius: var(--radius-lg); padding: 20px; color: #fff; }
+    .insight-icon { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 12px; }
+    .insight-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .insight-text  { font-size: 13px; opacity: .8; line-height: 1.6; margin-bottom: 14px; }
+    .btn-analizar {
+      width: 100%; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      border-radius: var(--radius-md); color: #fff; font-size: 13px; font-weight: 500;
+      padding: 8px; cursor: pointer; transition: background .15s;
+    }
+    .btn-analizar:hover { background: rgba(255,255,255,.22); }
+
+    /* ============================================================
+       VISTA ANALYTICS – Segunda pantalla con gráficas y KPIs
+    ============================================================ */
+    .analytics-header { margin-bottom: 28px; }
+    .analytics-title { font-size: 30px; font-family: var(--font-display); color: var(--text-main); margin-bottom: 6px; }
+    .analytics-sub   { font-size: 14px; color: var(--text-muted); }
+    .period-tabs { display: flex; align-items: center; gap: 4px; margin-bottom: 24px; }
+    .period-tab {
+      padding: 7px 18px; border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md); background: var(--white);
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      cursor: pointer; transition: all .15s;
+    }
+    .period-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .period-tab:hover:not(.active) { border-color: var(--navy); color: var(--navy); }
+    .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    /* Gráfica donut */
+    .card-donut {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);
+    }
+    .donut-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .donut-sub   { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+    .donut-total { font-size: 12px; color: var(--text-muted); font-weight: 600; float: right; margin-top: -36px; }
+    .donut-wrap  { position: relative; height: 220px; display: flex; align-items: center; justify-content: center; }
+    .donut-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 16px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+    .legend-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    /* Desglose por categoría */
+    .card-breakdown {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);
+      overflow-y: auto; max-height: 380px;
+    }
+    .breakdown-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .breakdown-sub   { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+    .breakdown-item  { margin-bottom: 18px; }
+    .breakdown-item:last-child { margin-bottom: 0; }
+    .breakdown-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .breakdown-cat { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+    .breakdown-pct-bar  { height: 5px; background: var(--gray-100); border-radius: 99px; overflow: hidden; margin-bottom: 3px; }
+    .breakdown-pct-fill { height: 100%; border-radius: 99px; }
+    .breakdown-pct-label{ font-size: 11px; color: var(--text-light); text-align: right; }
+    /* KPI cards de insights */
+    .insights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .card-insight-stat {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);
+    }
+    .insight-stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .insight-stat-label  { font-size: 13px; color: var(--text-muted); }
+    .insight-stat-badge  { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+    .insight-stat-badge.green { background: var(--green-bg); color: var(--green); }
+    .insight-stat-badge.red   { background: var(--red-bg);   color: var(--red); }
+    .insight-stat-value { font-size: 28px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 2px; }
+    .insight-stat-prev  { font-size: 12px; color: var(--text-light); }
+    /* Botón descargar PDF */
+    .btn-pdf {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; max-width: 360px; margin: 0 auto; background: var(--navy);
+      color: #fff; border: none; border-radius: var(--radius-lg); padding: 14px 20px;
+      font-size: 15px; font-weight: 600; cursor: pointer; transition: background .15s;
+    }
+    .btn-pdf:hover { background: var(--navy-light); }
+
+    /* ============================================================
+       FOOTER – Pie de página con copyright y enlaces
+    ============================================================ */
+    .footer {
+      background: var(--white); border-top: 1px solid var(--gray-200);
+      padding: 16px 32px; display: flex; align-items: center;
+      justify-content: space-between; font-size: 12px; color: var(--text-muted);
+    }
+    .footer-links { display: flex; gap: 16px; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--navy); }
+
+    /* ============================================================
+       MODALES – Overlay y caja de diálogo
+    ============================================================ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      z-index: 200; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--white); border-radius: var(--radius-xl);
+      width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+      box-shadow: var(--shadow-md); padding: 28px;
+    }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+    .modal-title    { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+    .modal-subtitle { font-size: 13px; color: var(--text-muted); }
+    .modal-close {
+      background: var(--gray-100); border: none; border-radius: 50%;
+      width: 32px; height: 32px; font-size: 20px; color: var(--gray-600);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; transition: background .15s;
+    }
+    .modal-close:hover { background: var(--gray-200); }
+    /* Tabs Gasto / Ingreso */
+    .modal-type-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    .modal-type-tab {
+      padding: 10px; border-radius: var(--radius-md); border: 2px solid var(--gray-200);
+      background: var(--gray-50); font-size: 14px; font-weight: 500;
+      color: var(--text-muted); cursor: pointer; transition: all .15s;
+    }
+    .modal-type-tab.active-expense { border-color: var(--red-light); background: var(--red-bg); color: var(--red); }
+    .modal-type-tab.active-income  { border-color: var(--green-light); background: var(--green-bg); color: var(--green); }
+    /* Caja del monto */
+    .amount-box { background: var(--gray-50); border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 16px; }
+    .amount-label { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
+    .amount-input-wrap { display: flex; align-items: center; gap: 8px; }
+    .amount-currency { font-size: 28px; font-weight: 700; color: var(--text-main); }
+    .amount-input { border: none; background: none; outline: none; font-size: 36px; font-weight: 700; width: 100%; color: var(--text-main); }
+    /* Campos del formulario */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+    .form-input {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md); font-size: 14px; color: var(--text-main);
+      background: var(--white); outline: none; transition: border-color .15s;
+    }
+    .form-input:focus { border-color: var(--navy); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    /* Grid de categorías */
+    .cats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .cat-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 10px 6px; border: 2px solid var(--gray-200); border-radius: var(--radius-md);
+      background: var(--white); font-size: 12px; color: var(--text-muted);
+      cursor: pointer; transition: all .15s; font-family: var(--font);
+    }
+    .cat-btn:hover { border-color: var(--navy-light); color: var(--navy); }
+    .cat-btn.selected { border-color: var(--navy); background: #EEF0FA; color: var(--navy); font-weight: 600; }
+    .cat-icon { font-size: 18px; }
+    /* Botones del modal */
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid var(--gray-100); padding-top: 20px; }
+    .btn-cancel { padding: 10px 20px; border: 1px solid var(--gray-300); border-radius: var(--radius-md); background: var(--white); font-size: 14px; color: var(--text-main); cursor: pointer; }
+    .btn-save   { padding: 10px 20px; border: none; border-radius: var(--radius-md); background: var(--navy); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; }
+    .btn-save:hover { background: var(--navy-light); }
+
+    /* ============================================================
+       RESPONSIVO – Ajustes para pantallas pequeñas
+    ============================================================ */
+    @media (max-width: 900px) {
+      .top-cards { grid-template-columns: 1fr 1fr; }
+      .bottom-grid { grid-template-columns: 1fr; }
+      .tx-head, .tx-item { grid-template-columns: 100px 1fr 100px; }
+      .col-cat, .tx-date { display: none; }
+      .analytics-grid { grid-template-columns: 1fr; }
+      .insights-grid  { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .navbar { padding: 0 16px; gap: 12px; }
+      .nav-search, .nav-links { display: none; }
+      .top-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVBAR – Barra de navegación superior
+============================================================ -->
+<nav class="navbar">
+  <!-- Logo con ícono SVG -->
+  <a class="logo" href="#">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+    </div>
+    FinTrack
+  </a>
+
+  <!-- Botones de navegación entre vistas -->
+  <div class="nav-links">
+    <button class="nav-link active" id="btn-nav-dashboard" onclick="mostrarVista('dashboard', this)">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-link" id="btn-nav-analytics" onclick="mostrarVista('analytics', this)">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </button>
+  </div>
+
+  <!-- Buscador en tiempo real -->
+  <div class="nav-search">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search-input" placeholder="Buscar transacciones..." oninput="filtrarTransacciones()" />
+  </div>
+
+  <!-- Botón principal para agregar transacción -->
+  <button class="btn-add" onclick="abrirModal()">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Agregar
+  </button>
+
+  <!-- Usuario activo + botón cerrar sesión -->
+  <div class="nav-user-info">
+    <div class="nav-avatar" id="nav-avatar">?</div>
+    <span class="nav-username" id="nav-username">...</span>
+    <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+  </div>
+</nav>
+
+
+<!-- ============================================================
+     CONTENIDO PRINCIPAL
+============================================================ -->
+<div class="main-content">
+
+  <!-- ==========================================================
+       VISTA: DASHBOARD
+  =========================================================== -->
+  <div id="view-dashboard">
+
+    <!-- Tarjetas de métricas superiores -->
+    <div class="top-cards">
+
+      <!-- Tarjeta grande: Saldo Total con botón de edición -->
+      <div class="card-total">
+        <div class="card-total-label">SALDO TOTAL</div>
+        <div class="card-total-amount">
+          <span id="saldo-display">€0,00</span>
+          <button class="edit-saldo-btn" onclick="abrirModalSaldo()" title="Editar saldo">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </div>
+        <div class="card-total-sub">Saldo disponible actualizado</div>
+        <div class="card-total-badges">
+          <span class="badge badge-navy">💳 Principal</span>
+          <span class="badge badge-green" id="badge-ingresos">↑ €0</span>
+          <span class="badge badge-red"   id="badge-gastos">↓ €0</span>
+        </div>
+      </div>
+
+      <!-- Métrica: Disponible -->
+      <div class="card-metric">
+        <div class="card-metric-label">Disponible</div>
+        <div class="card-metric-value" id="metric-disponible">€0,00</div>
+        <div class="card-metric-sub">Saldo actual</div>
+      </div>
+
+      <!-- Métrica: Total Gastos -->
+      <div class="card-metric">
+        <div class="card-metric-label">Gastos</div>
+        <div class="card-metric-value" id="metric-gastos" style="color:var(--red-light)">€0,00</div>
+        <div class="card-metric-sub">Total registrado</div>
+      </div>
+
+      <!-- Métrica: Total Ingresos -->
+      <div class="card-metric">
+        <div class="card-metric-label">Ingresos</div>
+        <div class="card-metric-value" id="metric-ingresos" style="color:var(--green)">€0,00</div>
+        <div class="card-metric-sub">Total registrado</div>
+      </div>
+
+    </div><!-- /top-cards -->
+
+    <!-- Fila de filtros y exportar -->
+    <div class="filters-row">
+      <button class="filter-btn">
+        <svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+        Filtrar
+      </button>
+      <button class="filter-btn">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Este mes
+      </button>
+      <button class="btn-export" onclick="exportarCSV()">
+        ⬇ Exportar CSV
+      </button>
+    </div>
+
+    <!-- Grid inferior: Transacciones + Sidebar -->
+    <div class="bottom-grid">
+
+      <!-- Panel de transacciones recientes -->
+      <div class="card-transactions">
+        <div class="card-header">
+          <span class="card-title">Transacciones Recientes</span>
+          <button class="link-ver-todo">Ver todo →</button>
+        </div>
+
+        <!-- Cabecera de columnas -->
+        <div class="tx-head">
+          <span>FECHA</span>
+          <span>DESCRIPCIÓN</span>
+          <span class="col-cat">CATEGORÍA</span>
+          <span style="text-align:right">MONTO</span>
+          <span></span>
+        </div>
+
+        <!-- Lista de transacciones (generada por JS) -->
+        <div class="tx-list" id="tx-list">
+          <div class="tx-empty">
+            <div class="tx-empty-icon">💳</div>
+            Aún no hay transacciones.<br>¡Agrega tu primer gasto o ingreso!
+          </div>
+        </div>
+
+        <!-- Resumen estadístico al pie -->
+        <div class="tx-summary">
+          <div class="tx-summary-item">
+            <div class="tx-summary-icon">📉</div>
+            <div>
+              <div class="tx-summary-label">Mayor Gasto</div>
+              <div class="tx-summary-value" id="summary-mayor-gasto">—</div>
+            </div>
+          </div>
+          <div class="tx-summary-item">
+            <div class="tx-summary-icon">📈</div>
+            <div>
+              <div class="tx-summary-label">Mayor Ingreso</div>
+              <div class="tx-summary-value" id="summary-mayor-ingreso">—</div>
+            </div>
+          </div>
+          <div class="tx-summary-item">
+            <div class="tx-summary-icon">📅</div>
+            <div>
+              <div class="tx-summary-label">Día Más Activo</div>
+              <div class="tx-summary-value" id="summary-dia-activo">—</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /card-transactions -->
+
+      <!-- Sidebar: Metas de ahorro + Insight -->
+      <div class="sidebar">
+
+        <!-- Tarjeta de metas -->
+        <div class="card-goals">
+          <div class="goal-header">
+            <span class="goal-title">🎯 Metas de Ahorro</span>
+            <button class="btn-add-goal" onclick="abrirModalMeta()" title="Agregar meta">+</button>
+          </div>
+          <div id="goals-list"></div>
+          <div id="goals-empty" style="font-size:13px;color:var(--text-light);text-align:center;padding:20px 0;">
+            Sin metas. ¡Agrega una!
+          </div>
+        </div>
+
+        <!-- Tarjeta de insight del mes -->
+        <div class="card-insight">
+          <div class="insight-icon">💡</div>
+          <div class="insight-title">Insight del período</div>
+          <div class="insight-text" id="insight-text">
+            Agrega transacciones para ver tu análisis personalizado.
+          </div>
+          <button class="btn-analizar" onclick="mostrarVista('analytics', document.getElementById('btn-nav-analytics'))">
+            Ver análisis completo →
+          </button>
+        </div>
+
+      </div><!-- /sidebar -->
+    </div><!-- /bottom-grid -->
+
+  </div><!-- /view-dashboard -->
+
+
+  <!-- ==========================================================
+       VISTA: ANALYTICS
+  =========================================================== -->
+  <div id="view-analytics">
+
+    <div class="analytics-header">
+      <div class="analytics-title">Análisis Financiero</div>
+      <div class="analytics-sub">Distribución de gastos e indicadores de rendimiento</div>
+    </div>
+
+    <!-- Pestañas de período -->
+    <div class="period-tabs">
+      <button class="period-tab active" onclick="seleccionarPeriodo('mes', this)">Este mes</button>
+      <button class="period-tab" onclick="seleccionarPeriodo('trimestre', this)">Trimestre</button>
+      <button class="period-tab" onclick="seleccionarPeriodo('año', this)">Este año</button>
+      <button class="period-tab" onclick="seleccionarPeriodo('todo', this)">Todo</button>
+    </div>
+
+    <!-- Grid: Donut + Desglose -->
+    <div class="analytics-grid">
+
+      <!-- Gráfica de pastel/donut -->
+      <div class="card-donut">
+        <div class="donut-title">Distribución de Gastos</div>
+        <div class="donut-sub">Por categoría</div>
+        <div class="donut-total" id="donut-total-label">TOTAL: $0</div>
+        <div class="donut-wrap">
+          <canvas id="donutChart"></canvas>
+        </div>
+        <div class="donut-legend" id="donut-legend"></div>
+      </div>
+
+      <!-- Desglose detallado por categoría -->
+      <div class="card-breakdown">
+        <div class="breakdown-title">Desglose por Categoría</div>
+        <div class="breakdown-sub">Porcentaje de cada categoría sobre el total</div>
+        <div id="breakdown-list">
+          <p style="font-size:13px;color:var(--text-light)">Sin datos aún.</p>
+        </div>
+      </div>
+
+    </div><!-- /analytics-grid -->
+
+    <!-- KPI cards -->
+    <div class="insights-grid">
+      <div class="card-insight-stat">
+        <div class="insight-stat-header">
+          <span class="insight-stat-label">Gasto Total</span>
+          <span class="insight-stat-badge green" id="is-badge-gasto">↓ 0%</span>
+        </div>
+        <div class="insight-stat-value" id="is-gasto-total">$0</div>
+        <div class="insight-stat-prev">vs mes anterior</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:6px;letter-spacing:.04em;">ÚLTIMOS 30 DÍAS</div>
+      </div>
+      <div class="card-insight-stat">
+        <div class="insight-stat-header">
+          <span class="insight-stat-label">Ahorro Realizado</span>
+          <span class="insight-stat-badge green" id="is-badge-ahorro">↑ 0%</span>
+        </div>
+        <div class="insight-stat-value" id="is-ahorro">$0</div>
+        <div class="insight-stat-prev">Ingresos − Gastos</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:6px;letter-spacing:.04em;">ÚLTIMOS 30 DÍAS</div>
+      </div>
+      <div class="card-insight-stat">
+        <div class="insight-stat-header">
+          <span class="insight-stat-label">Gasto Promedio Diario</span>
+          <span class="insight-stat-badge red" id="is-badge-prom">↑ 0%</span>
+        </div>
+        <div class="insight-stat-value" id="is-prom-diario">$0</div>
+        <div class="insight-stat-prev">Basado en gastos del mes</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:6px;letter-spacing:.04em;">ÚLTIMOS 30 DÍAS</div>
+      </div>
+    </div>
+
+    <!-- Botón PDF -->
+    <button class="btn-pdf" onclick="alert('Función de exportación PDF disponible con servidor Python. Consulta fintrack_server.py')">
+      ⬇ Descargar informe detallado (PDF)
+    </button>
+
+  </div><!-- /view-analytics -->
+
+</div><!-- /main-content -->
+
+
+<!-- ============================================================
+     FOOTER
+============================================================ -->
+<footer class="footer">
+  <div>© 2024 FinTrack. Todos los derechos reservados.</div>
+  <div class="footer-links">
+    <a href="#">Soporte</a>
+    <a href="#">Privacidad</a>
+    <a href="#">Términos</a>
+  </div>
+</footer>
+
+
+<!-- ============================================================
+     MODAL: Registrar gasto / ingreso
+============================================================ -->
+<div class="modal-overlay" id="modal-tx">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Registrar transacción</div>
+        <div class="modal-subtitle">Completa los detalles de tu nueva transacción</div>
+      </div>
+      <button class="modal-close" onclick="cerrarModal()">×</button>
+    </div>
+
+    <!-- Tabs Gasto / Ingreso -->
+    <div class="modal-type-tabs">
+      <button class="modal-type-tab active-expense" id="tab-gasto"   onclick="establecerTipo('expense')">📤 Gasto</button>
+      <button class="modal-type-tab"                id="tab-ingreso" onclick="establecerTipo('income')">📥 Ingreso</button>
+    </div>
+
+    <!-- Campo de monto -->
+    <div class="amount-box">
+      <div class="amount-label">MONTO DEL GASTO</div>
+      <div class="amount-input-wrap">
+        <span class="amount-currency">$</span>
+        <input type="number" class="amount-input" id="tx-amount" placeholder="0.00" min="0" step="0.01" />
+      </div>
+    </div>
+
+    <!-- Descripción -->
+    <div class="form-group">
+      <label class="form-label">Descripción</label>
+      <input type="text" class="form-input" id="tx-desc" placeholder="Ej. Supermercado Central" />
+    </div>
+
+    <!-- Grid de categorías (generado por JS) -->
+    <div class="form-group">
+      <label class="form-label">Categoría</label>
+      <div class="cats-grid" id="cats-grid"></div>
+    </div>
+
+    <!-- Fecha y cuenta -->
+    <div class="form-row">
+      <div>
+        <label class="form-label">Fecha</label>
+        <input type="date" class="form-input" id="tx-fecha" />
+      </div>
+      <div>
+        <label class="form-label">Cuenta</label>
+        <select class="form-input" id="tx-cuenta">
+          <option value="principal">Cuenta Principal</option>
+          <option value="ahorros">Cuenta Ahorros</option>
+          <option value="efectivo">Efectivo</option>
+          <option value="tarjeta">Tarjeta de Crédito</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-save"   onclick="guardarTransaccion()">✔ Guardar transacción</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     MODAL: Editar saldo inicial
+============================================================ -->
+<div class="modal-overlay" id="modal-saldo">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Editar Saldo Total</div>
+        <div class="modal-subtitle">Define tu saldo de partida. Los movimientos lo ajustarán automáticamente.</div>
+      </div>
+      <button class="modal-close" onclick="cerrarModalSaldo()">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Saldo inicial (€)</label>
+      <input type="number" class="form-input" id="saldo-input" placeholder="Ej. 12450.85" step="0.01" min="0" style="font-size:22px;padding:14px;" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cerrarModalSaldo()">Cancelar</button>
+      <button class="btn-save"   onclick="guardarSaldo()">✔ Guardar saldo</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     MODAL: Agregar meta de ahorro
+============================================================ -->
+<div class="modal-overlay" id="modal-meta">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Nueva Meta de Ahorro</div>
+        <div class="modal-subtitle">Define tu objetivo financiero</div>
+      </div>
+      <button class="modal-close" onclick="cerrarModalMeta()">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nombre de la meta</label>
+      <input type="text" class="form-input" id="meta-nombre" placeholder="Ej. Viaje a Japón" />
+    </div>
+    <div class="form-row">
+      <div>
+        <label class="form-label">Meta total ($)</label>
+        <input type="number" class="form-input" id="meta-objetivo" placeholder="5000" min="1" step="1" />
+      </div>
+      <div>
+        <label class="form-label">Ahorrado hasta ahora ($)</label>
+        <input type="number" class="form-input" id="meta-ahorrado" placeholder="0" min="0" step="1" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cerrarModalMeta()">Cancelar</button>
+      <button class="btn-save"   onclick="guardarMeta()">✔ Agregar meta</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT – Lógica de la aplicación
+     PARADIGMA: Estructurado y Funcional básico
+     Solo se usan: variables, arrays, funciones, if/else, for/while
+============================================================ -->
+<script>
+/* ============================================================
+   SECCIÓN 1 – DATOS CONSTANTES
+   Arrays paralelos que definen las categorías disponibles.
+   Se usan índices para cruzar información entre ellos.
+============================================================ */
+
+// IDs únicos de cada categoría (string identificador)
+var CAT_IDS    = ['comida','transporte','ocio','salud','vivienda','ropa',
+                  'educacion','tecnologia','supermercado','restaurantes',
+                  'suscripciones','deporte','viajes','mascotas',
+                  'ingresos','nomina','regalo','otros','servicios','ahorro'];
+
+// Nombres legibles para mostrar en la interfaz
+var CAT_NOMBRES = ['Comida','Transporte','Ocio','Salud','Vivienda','Ropa',
+                   'Educación','Tecnología','Super','Restaurante',
+                   'Suscripcion','Deporte','Viajes','Mascotas',
+                   'Ingresos','Nómina','Regalo','Otros','Servicios','Ahorro'];
+
+// Íconos emoji de cada categoría (mismo orden que CAT_IDS)
+var CAT_ICONOS  = ['🍔','🚗','🎮','💊','🏠','👕',
+                   '📚','💻','🛒','🍽️',
+                   '📺','🏃','✈️','🐾',
+                   '💰','💵','🎁','📦','💡','🏦'];
+
+// Colores de fondo para las etiquetas de categoría
+var CAT_COLORES = ['#FFF3E0','#E3F2FD','#F3E5F5','#E8F5E9','#FBE9E7','#FCE4EC',
+                   '#E8EAF6','#E0F2F1','#FFF8E1','#FFF3E0',
+                   '#F3E5F5','#E8F5E9','#E3F2FD','#FBE9E7',
+                   '#E8F5E9','#E8F5E9','#FCE4EC','#F5F5F5','#FFF9C4','#E3F2FD'];
+
+// Colores para la gráfica donut (paleta fija)
+var COLORES_GRAFICA = [
+  '#1C2463','#2E7D32','#C62828','#1565C0','#6A1B9A',
+  '#BF360C','#006064','#F9A825','#37474F','#880E4F',
+  '#1B5E20','#0D47A1','#4A148C','#E65100','#004D40'
+];
+
+
+/* ============================================================
+   SECCIÓN 2 – ESTADO GLOBAL
+   Variables simples y arrays que almacenan el estado completo
+   de la aplicación. Se persisten en localStorage.
+============================================================ */
+
+// Saldo base definido por el usuario
+var saldoInicial = 0;
+
+// Array de transacciones: cada elemento es un array con campos ordenados
+// Formato: [id, tipo, monto, descripcion, categoria, fecha, cuenta]
+var transacciones = [];
+
+// Array de metas de ahorro: [id, nombre, objetivo, ahorrado]
+var metas = [];
+
+// Variable UI: tipo de transacción seleccionado en el modal
+var tipoTxActual = 'expense';
+
+// Variable UI: ID de categoría seleccionada en el modal
+var categoriaSeleccionada = null;
+
+// Referencia a la instancia del gráfico Chart.js (para actualizarlo)
+var graficaDonut = null;
+
+
+/* ============================================================
+   SECCIÓN 3 – PERSISTENCIA (localStorage)
+   Funciones para guardar y cargar el estado usando JSON.
+   Cada usuario tiene su propia clave basada en su nombre
+   de sesión, para que los datos no se mezclen entre usuarios.
+============================================================ */
+
+/**
+ * obtenerUsuarioActual()
+ * Lee el nombre del usuario de la sesión activa.
+ * Primero intenta la cookie 'ft_user' que pone el login;
+ * si no existe, usa 'invitado' como fallback.
+ */
+function obtenerUsuarioActual() {
+  var cookies = document.cookie.split(';');
+  for (var i = 0; i < cookies.length; i++) {
+    var c = cookies[i].trim();
+    if (c.indexOf('ft_user=') === 0) {
+      return c.substring('ft_user='.length);
+    }
+  }
+  return 'invitado';
+}
+
+/**
+ * claveStorage()
+ * Retorna la clave de localStorage exclusiva para el usuario
+ * activo. Ejemplo: 'fintrack_v2_morgan', 'fintrack_v2_chagouaz'.
+ */
+function claveStorage() {
+  return 'fintrack_v2_' + obtenerUsuarioActual();
+}
+
+/**
+ * guardarEstado()
+ * Serializa el estado actual y lo guarda en localStorage
+ * bajo la clave única del usuario activo.
+ */
+function guardarEstado() {
+  var datos = {
+    saldoInicial:  saldoInicial,
+    transacciones: transacciones,
+    metas:         metas
+  };
+  localStorage.setItem(claveStorage(), JSON.stringify(datos));
+}
+
+/**
+ * cargarEstado()
+ * Recupera el estado guardado de localStorage para el usuario activo.
+ * Si no existe (primera vez), el estado permanece en sus valores iniciales.
+ */
+function cargarEstado() {
+  var raw = localStorage.getItem(claveStorage());
+  if (raw) {
+    var datos = JSON.parse(raw);
+    saldoInicial  = datos.saldoInicial  || 0;
+    transacciones = datos.transacciones || [];
+    metas         = datos.metas         || [];
+  }
+}
+
+
+/* ============================================================
+   SECCIÓN 4 – FUNCIONES AUXILIARES DE CATEGORÍAS
+   Buscan datos de categoría dado un ID usando bucle for.
+============================================================ */
+
+/**
+ * obtenerIndiceCat(id)
+ * Recorre CAT_IDS con un for y retorna el índice donde id coincide.
+ * Retorna -1 si no se encuentra (nunca debería ocurrir con datos válidos).
+ */
+function obtenerIndiceCat(id) {
+  for (var i = 0; i < CAT_IDS.length; i++) {
+    if (CAT_IDS[i] === id) {
+      return i;
+    }
+  }
+  return -1; // No encontrado
+}
+
+// Funciones de acceso a atributos de una categoría dado su ID
+function nombreCat(id)  { var i = obtenerIndiceCat(id); return i >= 0 ? CAT_NOMBRES[i] : id; }
+function iconoCat(id)   { var i = obtenerIndiceCat(id); return i >= 0 ? CAT_ICONOS[i]  : '📦'; }
+function colorCat(id)   { var i = obtenerIndiceCat(id); return i >= 0 ? CAT_COLORES[i] : '#eee'; }
+
+
+/* ============================================================
+   SECCIÓN 5 – FUNCIONES DE FORMATO
+   Convierten números en cadenas de texto con formato visual.
+============================================================ */
+
+/**
+ * formatearEuro(n)
+ * Retorna el número formateado como moneda € con separadores ES.
+ * Ejemplo: 1234.5 → "€1.234,50"
+ */
+function formatearEuro(n) {
+  return '€' + Number(n).toLocaleString('es-ES', {
+    minimumFractionDigits: 2, maximumFractionDigits: 2
+  });
+}
+
+/**
+ * formatearDolar(n)
+ * Retorna el número formateado como $X.XXX sin decimales.
+ */
+function formatearDolar(n) {
+  return '$' + Number(n).toLocaleString('es-ES', {
+    minimumFractionDigits: 0, maximumFractionDigits: 0
+  });
+}
+
+/**
+ * formatearFecha(iso)
+ * Convierte una cadena ISO (YYYY-MM-DD) a formato legible "12 may. 2024".
+ */
+function formatearFecha(iso) {
+  var d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+/**
+ * escaparHTML(str)
+ * Previene inyección XSS convirtiendo caracteres especiales a entidades HTML.
+ */
+function escaparHTML(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+
+/* ============================================================
+   SECCIÓN 6 – CÁLCULOS FINANCIEROS
+   Funciones puras que calculan totales recorriendo el array
+   de transacciones con bucles for.
+============================================================ */
+
+/**
+ * calcularSaldoReal()
+ * Suma el saldo inicial, luego itera sobre transacciones:
+ *   - Si es ingreso: suma el monto
+ *   - Si es gasto:   resta el monto
+ * Retorna el saldo actual.
+ */
+function calcularSaldoReal() {
+  var total = saldoInicial;
+  for (var i = 0; i < transacciones.length; i++) {
+    var tx = transacciones[i];
+    if (tx[1] === 'income') {
+      total += tx[2]; // Suma ingresos (índice 2 = monto)
+    } else {
+      total -= tx[2]; // Resta gastos
+    }
+  }
+  return total;
+}
+
+/**
+ * calcularTotalGastos()
+ * Itera con for y acumula solo las transacciones de tipo 'expense'.
+ */
+function calcularTotalGastos() {
+  var total = 0;
+  for (var i = 0; i < transacciones.length; i++) {
+    if (transacciones[i][1] === 'expense') {
+      total += transacciones[i][2];
+    }
+  }
+  return total;
+}
+
+/**
+ * calcularTotalIngresos()
+ * Itera con for y acumula solo las transacciones de tipo 'income'.
+ */
+function calcularTotalIngresos() {
+  var total = 0;
+  for (var i = 0; i < transacciones.length; i++) {
+    if (transacciones[i][1] === 'income') {
+      total += transacciones[i][2];
+    }
+  }
+  return total;
+}
+
+
+/* ============================================================
+   SECCIÓN 7 – RENDERIZADO DE LA INTERFAZ
+   Cada función actualiza una sección específica del DOM.
+   Se llaman en cadena desde la función principal renderizar().
+============================================================ */
+
+/**
+ * renderizar()
+ * Función principal que actualiza toda la interfaz.
+ * Calcula los totales y llama a cada función de renderizado parcial.
+ */
+function renderizar() {
+  var saldoActual  = calcularSaldoReal();
+  var totalGastos  = calcularTotalGastos();
+  var totalIngresos = calcularTotalIngresos();
+
+  // Actualizar tarjetas superiores
+  document.getElementById('saldo-display').textContent      = formatearEuro(saldoActual);
+  document.getElementById('metric-disponible').textContent  = formatearEuro(saldoActual);
+  document.getElementById('metric-gastos').textContent      = formatearEuro(totalGastos);
+  document.getElementById('metric-ingresos').textContent    = formatearEuro(totalIngresos);
+  document.getElementById('badge-ingresos').textContent     = '↑ ' + formatearEuro(totalIngresos);
+  document.getElementById('badge-gastos').textContent       = '↓ ' + formatearEuro(totalGastos);
+
+  // Llamar a funciones de renderizado por sección
+  renderizarTransacciones(transacciones);
+  renderizarResumen();
+  renderizarMetas();
+  renderizarInsight(totalGastos, totalIngresos);
+  renderizarAnalytics();
+}
+
+/**
+ * renderizarTransacciones(lista)
+ * Construye el HTML de cada fila de la tabla.
+ * Aplica el filtro de búsqueda y ordena por fecha descendente.
+ *
+ * @param {Array} lista - Array de transacciones a mostrar
+ */
+function renderizarTransacciones(lista) {
+  var contenedor = document.getElementById('tx-list');
+  var busqueda   = document.getElementById('search-input').value.toLowerCase();
+
+  // FILTRO: seleccionar solo las que coincidan con la búsqueda
+  var filtradas = [];
+  for (var i = 0; i < lista.length; i++) {
+    var tx      = lista[i];
+    var desc    = tx[3].toLowerCase();        // índice 3 = descripción
+    var catNom  = nombreCat(tx[4]).toLowerCase(); // índice 4 = categoría
+    if (desc.indexOf(busqueda) >= 0 || catNom.indexOf(busqueda) >= 0) {
+      filtradas.push(tx);
+    }
+  }
+
+  // Estado vacío: sin transacciones
+  if (filtradas.length === 0) {
+    var msg = busqueda
+      ? 'No se encontraron transacciones.'
+      : 'Aún no hay transacciones.<br>¡Empieza agregando tu primer gasto o ingreso!';
+    contenedor.innerHTML = '<div class="tx-empty"><div class="tx-empty-icon">💳</div>' + msg + '</div>';
+    return;
+  }
+
+  // ORDENAR por fecha descendente (más reciente primero)
+  // Copia del array para no modificar el original
+  var ordenadas = filtradas.slice();
+  for (var i = 0; i < ordenadas.length - 1; i++) {
+    for (var j = i + 1; j < ordenadas.length; j++) {
+      if (ordenadas[j][5] > ordenadas[i][5]) { // índice 5 = fecha ISO
+        var temp    = ordenadas[i];
+        ordenadas[i] = ordenadas[j];
+        ordenadas[j] = temp;
+      }
+    }
+  }
+
+  // CONSTRUIR HTML de filas
+  var html = '';
+  for (var i = 0; i < ordenadas.length; i++) {
+    var tx        = ordenadas[i];
+    var esIngreso = tx[1] === 'income';
+    var prefijo   = esIngreso ? '+' : '-';
+    var claseAmt  = esIngreso ? 'income' : 'expense';
+    html += '<div class="tx-item">'
+          + '<span class="tx-date">' + formatearFecha(tx[5]) + '</span>'
+          + '<span class="tx-desc">' + escaparHTML(tx[3]) + '</span>'
+          + '<span class="tx-cat col-cat">'
+          +   '<span class="tx-cat-icon" style="background:' + colorCat(tx[4]) + '">' + iconoCat(tx[4]) + '</span>'
+          +   nombreCat(tx[4])
+          + '</span>'
+          + '<span class="tx-amount ' + claseAmt + '">' + prefijo + formatearEuro(tx[2]) + '</span>'
+          + '<button class="tx-delete" onclick="eliminarTransaccion(\'' + tx[0] + '\')" title="Eliminar">×</button>'
+          + '</div>';
+  }
+  contenedor.innerHTML = html;
+}
+
+/**
+ * renderizarResumen()
+ * Calcula y muestra: mayor gasto, mayor ingreso y día más activo.
+ * Usa bucles for para encontrar máximos y conteos.
+ */
+function renderizarResumen() {
+  // Encontrar mayor gasto con bucle for
+  var maxGastoMonto = 0;
+  var maxGastoDesc  = '—';
+  for (var i = 0; i < transacciones.length; i++) {
+    if (transacciones[i][1] === 'expense' && transacciones[i][2] > maxGastoMonto) {
+      maxGastoMonto = transacciones[i][2];
+      maxGastoDesc  = transacciones[i][3]; // descripción
+    }
+  }
+
+  // Encontrar mayor ingreso con bucle for
+  var maxIngresoMonto = 0;
+  var maxIngresoDesc  = '—';
+  for (var i = 0; i < transacciones.length; i++) {
+    if (transacciones[i][1] === 'income' && transacciones[i][2] > maxIngresoMonto) {
+      maxIngresoMonto = transacciones[i][2];
+      maxIngresoDesc  = transacciones[i][3];
+    }
+  }
+
+  // Contar transacciones por día con dos arrays paralelos
+  var diasFechas = [];  // Fechas únicas
+  var diasConts  = [];  // Cantidad por cada fecha
+
+  for (var i = 0; i < transacciones.length; i++) {
+    var fecha  = transacciones[i][5];
+    var indice = -1;
+    // Buscar si ya existe esa fecha
+    for (var j = 0; j < diasFechas.length; j++) {
+      if (diasFechas[j] === fecha) { indice = j; break; }
+    }
+    if (indice >= 0) {
+      diasConts[indice]++;  // Incrementar contador existente
+    } else {
+      diasFechas.push(fecha); // Agregar nueva fecha
+      diasConts.push(1);
+    }
+  }
+
+  // Encontrar el día con más transacciones
+  var maxCont = 0;
+  var diaMax  = '—';
+  for (var i = 0; i < diasFechas.length; i++) {
+    if (diasConts[i] > maxCont) {
+      maxCont = diasConts[i];
+      diaMax  = diasFechas[i];
+    }
+  }
+
+  // Formatear el día más activo a texto legible
+  var textodia = '—';
+  if (diaMax !== '—') {
+    var d = new Date(diaMax + 'T12:00:00');
+    textodia = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' });
+  }
+
+  // Actualizar el DOM
+  document.getElementById('summary-mayor-gasto').textContent   = escaparHTML(maxGastoDesc);
+  document.getElementById('summary-mayor-ingreso').textContent = escaparHTML(maxIngresoDesc);
+  document.getElementById('summary-dia-activo').textContent    = textodia;
+}
+
+/**
+ * renderizarMetas()
+ * Genera el HTML de cada meta con barra de progreso.
+ * Calcula porcentaje y monto restante.
+ */
+function renderizarMetas() {
+  var lista  = document.getElementById('goals-list');
+  var vacio  = document.getElementById('goals-empty');
+
+  // Sin metas: mostrar mensaje vacío
+  if (metas.length === 0) {
+    lista.innerHTML    = '';
+    vacio.style.display = 'block';
+    return;
+  }
+  vacio.style.display = 'none';
+
+  // Construir HTML de cada meta
+  var html = '';
+  for (var i = 0; i < metas.length; i++) {
+    var meta    = metas[i];                // [id, nombre, objetivo, ahorrado]
+    var pct     = Math.round((meta[3] / meta[2]) * 100);
+    if (pct > 100) pct = 100;             // No superar 100%
+    var faltante = meta[2] - meta[3];
+    if (faltante < 0) faltante = 0;
+
+    html += '<div class="goal-item">'
+          + '<div class="goal-top">'
+          +   '<span class="goal-name">' + escaparHTML(meta[1]) + '</span>'
+          +   '<span class="goal-pct">' + pct + '%</span>'
+          + '</div>'
+          + '<div class="goal-bar"><div class="goal-bar-fill" style="width:' + pct + '%"></div></div>'
+          + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+          +   '<span class="goal-remaining">Faltan ' + formatearEuro(faltante) + ' para la meta</span>'
+          +   '<button onclick="eliminarMeta(\'' + meta[0] + '\')" style="background:none;border:none;color:var(--gray-300);cursor:pointer;font-size:14px;" title="Eliminar">×</button>'
+          + '</div>'
+          + '</div>';
+  }
+  lista.innerHTML = html;
+}
+
+/**
+ * renderizarInsight(gastos, ingresos)
+ * Genera un mensaje de consejo basado en el balance actual
+ * y la categoría con mayor gasto (búsqueda con for).
+ */
+function renderizarInsight(gastos, ingresos) {
+  var el = document.getElementById('insight-text');
+
+  if (transacciones.length === 0) {
+    el.textContent = 'Agrega transacciones para ver tu análisis personalizado.';
+    return;
+  }
+
+  var ahorro = ingresos - gastos;
+
+  // Calcular categoría con mayor gasto usando arrays paralelos
+  var catIdsGasto    = [];
+  var catMontoGasto  = [];
+
+  for (var i = 0; i < transacciones.length; i++) {
+    if (transacciones[i][1] === 'expense') {
+      var catId  = transacciones[i][4];
+      var monto  = transacciones[i][2];
+      var indice = -1;
+      for (var j = 0; j < catIdsGasto.length; j++) {
+        if (catIdsGasto[j] === catId) { indice = j; break; }
+      }
+      if (indice >= 0) {
+        catMontoGasto[indice] += monto;
+      } else {
+        catIdsGasto.push(catId);
+        catMontoGasto.push(monto);
+      }
+    }
+  }
+
+  // Encontrar la categoría con mayor acumulado
+  var maxCatMonto = 0;
+  var maxCatId    = null;
+  for (var i = 0; i < catIdsGasto.length; i++) {
+    if (catMontoGasto[i] > maxCatMonto) {
+      maxCatMonto = catMontoGasto[i];
+      maxCatId    = catIdsGasto[i];
+    }
+  }
+
+  // Construir mensaje de insight
+  var mensaje = '';
+  if (ahorro > 0) {
+    mensaje = '¡Bien! Llevas ' + formatearEuro(ahorro) + ' de ahorro este período. ';
+  } else {
+    mensaje = 'Tus gastos superan tus ingresos por ' + formatearEuro(Math.abs(ahorro)) + '. Revisa tu presupuesto. ';
+  }
+
+  if (maxCatId) {
+    mensaje += 'Tu mayor gasto es en ' + nombreCat(maxCatId) + ': ' + formatearEuro(maxCatMonto) + '.';
+  }
+
+  el.textContent = mensaje;
+}
+
+/**
+ * renderizarAnalytics()
+ * Calcula datos para el gráfico donut y el desglose por categoría.
+ * Agrupa gastos usando arrays paralelos (sin diccionarios).
+ */
+function renderizarAnalytics() {
+  // Calcular totales
+  var totalGastos   = calcularTotalGastos();
+  var totalIngresos = calcularTotalIngresos();
+  var ahorro        = totalIngresos - totalGastos;
+
+  // Actualizar KPI cards
+  document.getElementById('is-gasto-total').textContent  = formatearDolar(totalGastos);
+  document.getElementById('is-ahorro').textContent       = formatearDolar(ahorro > 0 ? ahorro : 0);
+  document.getElementById('is-prom-diario').textContent  = formatearDolar(totalGastos / 30);
+  document.getElementById('donut-total-label').textContent = 'TOTAL: ' + formatearDolar(totalGastos);
+
+  // Agrupar gastos por categoría: dos arrays paralelos
+  var grupoIds    = [];
+  var grupoMontos = [];
+
+  for (var i = 0; i < transacciones.length; i++) {
+    if (transacciones[i][1] === 'expense') {
+      var catId  = transacciones[i][4];
+      var monto  = transacciones[i][2];
+      var indice = -1;
+      // Buscar si la categoría ya fue registrada
+      for (var j = 0; j < grupoIds.length; j++) {
+        if (grupoIds[j] === catId) { indice = j; break; }
+      }
+      if (indice >= 0) {
+        grupoMontos[indice] += monto; // Acumular al existente
+      } else {
+        grupoIds.push(catId);    // Nueva categoría
+        grupoMontos.push(monto);
+      }
+    }
+  }
+
+  // ORDENAR grupos de mayor a menor (burbuja simple)
+  for (var i = 0; i < grupoIds.length - 1; i++) {
+    for (var j = i + 1; j < grupoIds.length; j++) {
+      if (grupoMontos[j] > grupoMontos[i]) {
+        var tmpId  = grupoIds[i];   grupoIds[i]    = grupoIds[j];    grupoIds[j]    = tmpId;
+        var tmpMnt = grupoMontos[i]; grupoMontos[i] = grupoMontos[j]; grupoMontos[j] = tmpMnt;
+      }
+    }
+  }
+
+  // Preparar arrays para Chart.js
+  var etiquetas = [];
+  var colores   = [];
+  for (var i = 0; i < grupoIds.length; i++) {
+    etiquetas.push(nombreCat(grupoIds[i]));
+    colores.push(COLORES_GRAFICA[i % COLORES_GRAFICA.length]);
+  }
+
+  // Actualizar o crear la gráfica donut
+  var canvas = document.getElementById('donutChart');
+  if (graficaDonut) {
+    // Actualizar datos de la instancia existente
+    graficaDonut.data.labels                    = etiquetas;
+    graficaDonut.data.datasets[0].data          = grupoMontos;
+    graficaDonut.data.datasets[0].backgroundColor = colores;
+    graficaDonut.update();
+  } else {
+    // Crear nueva instancia de Chart.js
+    graficaDonut = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: etiquetas,
+        datasets: [{ data: grupoMontos, backgroundColor: colores, borderWidth: 3, borderColor: '#fff' }]
+      },
+      options: {
+        cutout: '65%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) { return ' ' + ctx.label + ': ' + formatearDolar(ctx.raw); }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Leyenda del donut
+  var legendaEl = document.getElementById('donut-legend');
+  var htmlLeg   = '';
+  for (var i = 0; i < grupoIds.length; i++) {
+    htmlLeg += '<div class="legend-item">'
+             + '<div class="legend-dot" style="background:' + colores[i] + '"></div>'
+             + '<span>' + nombreCat(grupoIds[i]) + '</span>'
+             + '</div>';
+  }
+  legendaEl.innerHTML = htmlLeg;
+
+  // Desglose detallado
+  var desgloseEl = document.getElementById('breakdown-list');
+  if (grupoIds.length === 0) {
+    desgloseEl.innerHTML = '<p style="font-size:13px;color:var(--text-light)">Sin datos de gastos aún.</p>';
+    return;
+  }
+
+  var htmlDes = '';
+  for (var i = 0; i < grupoIds.length; i++) {
+    var pct = totalGastos > 0 ? Math.round((grupoMontos[i] / totalGastos) * 100) : 0;
+    htmlDes += '<div class="breakdown-item">'
+             + '<div class="breakdown-top">'
+             +   '<div class="breakdown-cat">'
+             +     '<span style="font-size:18px">' + iconoCat(grupoIds[i]) + '</span>'
+             +     '<div>'
+             +       '<div>' + nombreCat(grupoIds[i]) + '</div>'
+             +       '<div style="font-size:11px;color:var(--text-light)">' + pct + '% del total</div>'
+             +     '</div>'
+             +   '</div>'
+             +   '<div style="text-align:right">'
+             +     '<div style="font-size:14px;font-weight:600">' + formatearDolar(grupoMontos[i]) + '</div>'
+             +     '<div style="font-size:11px;color:var(--text-light)">MONTO</div>'
+             +   '</div>'
+             + '</div>'
+             + '<div class="breakdown-pct-bar">'
+             +   '<div class="breakdown-pct-fill" style="width:' + pct + '%;background:' + colores[i] + '"></div>'
+             + '</div>'
+             + '<div class="breakdown-pct-label">' + pct + '%</div>'
+             + '</div>';
+  }
+  desgloseEl.innerHTML = htmlDes;
+}
+
+
+/* ============================================================
+   SECCIÓN 8 – CONTROL DE VISTAS
+   Alterna entre la vista Dashboard y la vista Analytics.
+============================================================ */
+
+/**
+ * mostrarVista(nombre, botonEl)
+ * Muestra/oculta las secciones principales y actualiza el botón activo.
+ *
+ * @param {string} nombre  - 'dashboard' o 'analytics'
+ * @param {Element} botonEl - Botón que activó el cambio (para marcar activo)
+ */
+function mostrarVista(nombre, botonEl) {
+  // Mostrar/ocultar secciones
+  if (nombre === 'dashboard') {
+    document.getElementById('view-dashboard').style.display = 'block';
+    document.getElementById('view-analytics').style.display = 'none';
+  } else {
+    document.getElementById('view-dashboard').style.display = 'none';
+    document.getElementById('view-analytics').style.display = 'block';
+    renderizarAnalytics(); // Asegurar datos actualizados al entrar
+  }
+
+  // Desactivar todos los botones del nav y activar el correcto
+  var botonesNav = document.querySelectorAll('.nav-link');
+  for (var i = 0; i < botonesNav.length; i++) {
+    botonesNav[i].classList.remove('active');
+  }
+  if (botonEl) botonEl.classList.add('active');
+}
+
+/**
+ * seleccionarPeriodo(periodo, botonEl)
+ * Cambia la pestaña activa en el panel de Analytics.
+ * (Extensible: filtrar transacciones por período aquí)
+ */
+function seleccionarPeriodo(periodo, botonEl) {
+  var pestanias = document.querySelectorAll('.period-tab');
+  for (var i = 0; i < pestanias.length; i++) {
+    pestanias[i].classList.remove('active');
+  }
+  botonEl.classList.add('active');
+  // Aquí se podría agregar lógica de filtrado por período
+}
+
+
+/* ============================================================
+   SECCIÓN 9 – MODAL: AGREGAR TRANSACCIÓN
+============================================================ */
+
+/**
+ * abrirModal()
+ * Resetea el formulario y muestra el modal de transacción.
+ */
+function abrirModal() {
+  document.getElementById('tx-amount').value = '';
+  document.getElementById('tx-desc').value   = '';
+  document.getElementById('tx-fecha').value  = new Date().toISOString().split('T')[0];
+  categoriaSeleccionada = null;
+  establecerTipo('expense');
+  renderizarGridCategorias();
+  document.getElementById('modal-tx').classList.add('open');
+}
+
+/**
+ * cerrarModal()
+ * Oculta el modal de transacción.
+ */
+function cerrarModal() {
+  document.getElementById('modal-tx').classList.remove('open');
+}
+
+/**
+ * establecerTipo(tipo)
+ * Cambia la apariencia de las pestañas Gasto/Ingreso
+ * y actualiza la variable global tipoTxActual.
+ *
+ * @param {string} tipo - 'expense' o 'income'
+ */
+function establecerTipo(tipo) {
+  tipoTxActual = tipo;
+
+  var tabGasto   = document.getElementById('tab-gasto');
+  var tabIngreso = document.getElementById('tab-ingreso');
+
+  // Resetear clases
+  tabGasto.className   = 'modal-type-tab';
+  tabIngreso.className = 'modal-type-tab';
+
+  // Aplicar clase activa según tipo
+  if (tipo === 'expense') {
+    tabGasto.className += ' active-expense';
+  } else {
+    tabIngreso.className += ' active-income';
+  }
+
+  // Actualizar etiqueta del campo de monto
+  var etiqueta = tipo === 'expense' ? 'MONTO DEL GASTO' : 'MONTO DEL INGRESO';
+  document.querySelector('.amount-label').textContent = etiqueta;
+}
+
+/**
+ * renderizarGridCategorias()
+ * Genera los botones de categoría en el modal usando un bucle for.
+ * Marca como 'selected' la categoría actualmente seleccionada.
+ */
+function renderizarGridCategorias() {
+  var grid = document.getElementById('cats-grid');
+  var html = '';
+  for (var i = 0; i < CAT_IDS.length; i++) {
+    var seleccionada = categoriaSeleccionada === CAT_IDS[i] ? ' selected' : '';
+    html += '<button class="cat-btn' + seleccionada + '" onclick="seleccionarCat(\'' + CAT_IDS[i] + '\')">'
+          + '<span class="cat-icon">' + CAT_ICONOS[i] + '</span>'
+          + '<span>' + CAT_NOMBRES[i] + '</span>'
+          + '</button>';
+  }
+  grid.innerHTML = html;
+}
+
+/**
+ * seleccionarCat(id)
+ * Alterna la selección de una categoría.
+ * Si ya estaba seleccionada, la deselecciona (toggle).
+ */
+function seleccionarCat(id) {
+  if (categoriaSeleccionada === id) {
+    categoriaSeleccionada = null; // Deseleccionar
+  } else {
+    categoriaSeleccionada = id;   // Seleccionar nueva
+  }
+  renderizarGridCategorias();
+}
+
+/**
+ * guardarTransaccion()
+ * Valida los campos del formulario y agrega la nueva transacción
+ * al array global. Formato: [id, tipo, monto, desc, cat, fecha, cuenta]
+ */
+function guardarTransaccion() {
+  var montoRaw = parseFloat(document.getElementById('tx-amount').value);
+  var desc     = document.getElementById('tx-desc').value.trim();
+  var fecha    = document.getElementById('tx-fecha').value;
+  var cuenta   = document.getElementById('tx-cuenta').value;
+
+  // Validaciones con if/else
+  if (!montoRaw || montoRaw <= 0) {
+    alert('Por favor ingresa un monto válido mayor a 0.'); return;
+  }
+  if (!desc) {
+    alert('Por favor ingresa una descripción.'); return;
+  }
+  if (!fecha) {
+    alert('Por favor selecciona una fecha.'); return;
+  }
+
+  // Determinar categoría por defecto si no se seleccionó ninguna
+  var cat = categoriaSeleccionada;
+  if (!cat) {
+    cat = tipoTxActual === 'income' ? 'ingresos' : 'otros';
+  }
+
+  // Crear transacción como array paralelo
+  // Formato: [id, tipo, monto, descripcion, categoria, fecha, cuenta]
+  var nuevaTx = [
+    Date.now().toString(), // ID único basado en timestamp
+    tipoTxActual,
+    montoRaw,
+    desc,
+    cat,
+    fecha,
+    cuenta
+  ];
+
+  // Insertar al inicio del array (más reciente primero)
+  transacciones.unshift(nuevaTx);
+  guardarEstado();
+  renderizar();
+  cerrarModal();
+}
+
+/**
+ * eliminarTransaccion(id)
+ * Busca la transacción por ID con un bucle for y la remueve del array.
+ */
+function eliminarTransaccion(id) {
+  if (!confirm('¿Eliminar esta transacción?')) return;
+
+  // Crear nuevo array sin el elemento eliminado
+  var nuevaLista = [];
+  for (var i = 0; i < transacciones.length; i++) {
+    if (transacciones[i][0] !== id) {
+      nuevaLista.push(transacciones[i]);
+    }
+  }
+  transacciones = nuevaLista;
+  guardarEstado();
+  renderizar();
+}
+
+
+/* ============================================================
+   SECCIÓN 10 – MODAL: EDITAR SALDO INICIAL
+============================================================ */
+
+function abrirModalSaldo() {
+  document.getElementById('saldo-input').value = saldoInicial || '';
+  document.getElementById('modal-saldo').classList.add('open');
+}
+
+function cerrarModalSaldo() {
+  document.getElementById('modal-saldo').classList.remove('open');
+}
+
+/**
+ * guardarSaldo()
+ * Valida y guarda el nuevo saldo inicial ingresado por el usuario.
+ */
+function guardarSaldo() {
+  var val = parseFloat(document.getElementById('saldo-input').value);
+  if (isNaN(val) || val < 0) { alert('Ingresa un valor válido.'); return; }
+  saldoInicial = val;
+  guardarEstado();
+  renderizar();
+  cerrarModalSaldo();
+}
+
+
+/* ============================================================
+   SECCIÓN 11 – MODAL: METAS DE AHORRO
+============================================================ */
+
+function abrirModalMeta() {
+  document.getElementById('meta-nombre').value   = '';
+  document.getElementById('meta-objetivo').value = '';
+  document.getElementById('meta-ahorrado').value = '';
+  document.getElementById('modal-meta').classList.add('open');
+}
+
+function cerrarModalMeta() {
+  document.getElementById('modal-meta').classList.remove('open');
+}
+
+/**
+ * guardarMeta()
+ * Valida los campos y agrega la nueva meta al array de metas.
+ * Formato: [id, nombre, objetivo, ahorrado]
+ */
+function guardarMeta() {
+  var nombre   = document.getElementById('meta-nombre').value.trim();
+  var objetivo = parseFloat(document.getElementById('meta-objetivo').value);
+  var ahorrado = parseFloat(document.getElementById('meta-ahorrado').value) || 0;
+
+  // Validaciones
+  if (!nombre)                  { alert('Ingresa el nombre de la meta.'); return; }
+  if (!objetivo || objetivo <= 0) { alert('Ingresa un monto objetivo válido.'); return; }
+
+  var nuevaMeta = [Date.now().toString(), nombre, objetivo, ahorrado];
+  metas.push(nuevaMeta);
+  guardarEstado();
+  renderizarMetas();
+  cerrarModalMeta();
+}
+
+/**
+ * eliminarMeta(id)
+ * Remueve una meta del array usando un bucle for de filtrado.
+ */
+function eliminarMeta(id) {
+  var nuevaLista = [];
+  for (var i = 0; i < metas.length; i++) {
+    if (metas[i][0] !== id) {
+      nuevaLista.push(metas[i]);
+    }
+  }
+  metas = nuevaLista;
+  guardarEstado();
+  renderizarMetas();
+}
+
+
+/* ============================================================
+   SECCIÓN 12 – BÚSQUEDA Y EXPORTAR CSV
+============================================================ */
+
+/**
+ * filtrarTransacciones()
+ * Re-renderiza la lista aplicando el texto del buscador.
+ * Se llama con oninput desde el campo de búsqueda.
+ */
+function filtrarTransacciones() {
+  renderizarTransacciones(transacciones);
+}
+
+/**
+ * exportarCSV()
+ * Convierte el array de transacciones a formato CSV y descarga el archivo.
+ * Usa un bucle for para construir cada fila manualmente.
+ */
+function exportarCSV() {
+  if (transacciones.length === 0) {
+    alert('No hay transacciones para exportar.'); return;
+  }
+
+  // Cabecera del CSV
+  var filas = ['Fecha,Descripcion,Tipo,Categoria,Monto,Cuenta'];
+
+  // Construir una fila por cada transacción
+  for (var i = 0; i < transacciones.length; i++) {
+    var tx   = transacciones[i];
+    var tipo = tx[1] === 'expense' ? 'Gasto' : 'Ingreso';
+    var desc = '"' + tx[3].replace(/"/g, '""') + '"'; // Escapar comillas
+    filas.push([
+      tx[5],          // fecha
+      desc,           // descripción (escapada)
+      tipo,           // tipo texto
+      nombreCat(tx[4]), // nombre de categoría
+      tx[2].toFixed(2), // monto con 2 decimales
+      tx[6]           // cuenta
+    ].join(','));
+  }
+
+  // Crear blob y disparar descarga
+  var csv  = filas.join('\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'fintrack_export.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+
+/* ============================================================
+   SECCIÓN 13 – CIERRE DE MODALES AL CLICK EN OVERLAY
+   Permite cerrar el modal haciendo clic en el fondo oscuro.
+============================================================ */
+var overlays = document.querySelectorAll('.modal-overlay');
+for (var i = 0; i < overlays.length; i++) {
+  overlays[i].addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.classList.remove('open');
+    }
+  });
+}
+
+
+/* ============================================================
+   SECCIÓN 14 – INICIALIZACIÓN
+   Punto de entrada al cargar la página.
+============================================================ */
+(function inicializar() {
+  // 0. Mostrar el nombre del usuario activo en la navbar
+  var usuario = obtenerUsuarioActual();
+  document.getElementById('nav-username').textContent = usuario;
+  document.getElementById('nav-avatar').textContent   = usuario.charAt(0).toUpperCase();
+
+  // 1. Cargar datos del usuario activo desde localStorage
+  cargarEstado();
+
+  // 2. Si no hay datos previos, ofrecer configurar el saldo inicial
+  if (saldoInicial === 0 && transacciones.length === 0) {
+    setTimeout(function() {
+      if (confirm('¡Bienvenido a FinTrack, ' + usuario + '! ¿Deseas configurar tu saldo inicial ahora?')) {
+        abrirModalSaldo();
+      }
+    }, 500);
+  }
+
+  // 3. Renderizar toda la interfaz con el estado cargado
+  renderizar();
+})();
+
+/**
+ * cerrarSesion()
+ * Borra la cookie de sesión y redirige al login.
+ */
+function cerrarSesion() {
+  // Borrar cookie ft_user
+  document.cookie = 'ft_user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  // Llamar al endpoint de logout del servidor si existe
+  fetch('/api/logout', { method: 'POST' }).catch(function() {});
+  // Redirigir al login
+  window.location.href = '/login.html';
+}
+</script>
+</body>
+</html>
